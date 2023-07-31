@@ -5,19 +5,22 @@ Param(
 $baseUri = '%REPOSITORIESURL%'
 $UserName = $ENV:USERNAME
 $homeDirectory = Get-Item $HOME
-$backupDirectories = '%USERDIRECTORIES%'
 
-$backupDirectories | ForEach-Object -Begin {Push-Location} -Process {
-  if (Test-Path -Path "$($homeDirectory.FullName)\$_\.svn") {
-    Set-Location "$($homeDirectory.FullName)\$_"
-    svn update --username "$UserName"
-  }
-  else {
-    Set-Location $homeDirectory.FullName
-    svn co "$baseUri/$UserName/$_" --username "$UserName"
-  }
-} -End {Pop-Location}
+Push-Location $homeDirectory.FullName
 
-if (-Not (Test-Path -Path "$($homeDirectory.FullName)\LocalDocuments")) {
-  New-Item -ItemType Directory -Path "$($homeDirectory.FullName)\LocalDocuments"
+if (-Not (Test-Path -Path ".\LocalDocuments")) {
+  New-Item -ItemType Directory -Path ".\LocalDocuments"
+}
+
+if (Test-Path -Path ".\.svn") {
+  svn update --username "$UserName"
+}
+else {
+  Push-Location ..
+  svn co "$baseUri/$UserName" --username "$UserName"
+  Pop-Location
+
+  $ignorelist = (svn status | ForEach-Object {$_ -replace '^\?\s+(?<name>.*)$','${name}'}) -join "`n"
+  svn propset svn:ignore $ignorelist .
+  svn commit -m "setting up user '$UserName' (svn:ingore)"
 }

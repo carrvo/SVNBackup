@@ -13,7 +13,6 @@ Param(
 )
 
 $baseUri = '%REPOSITORIESURL%'
-$backupDirectories = '%USERDIRECTORIES%'
 
 <#
 .NOTES
@@ -39,6 +38,4 @@ $UserName = rw
 New-LocalUser -Name $UserName -FullName $FullName -Password $Password -AccountNeverExpires -PasswordNeverExpires
 Add-LocalGroupMember -Group Users -Member $UserName
 
-$backupDirectories | ForEach-Object {
-  svn mkdir --message "creating user '$UserName' ($_)" --parents "$baseUri/$UserName/$_"
-}
+svn mkdir --message "creating user '$UserName'" --parents "$baseUri/$UserName/"

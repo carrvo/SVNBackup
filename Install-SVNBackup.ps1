@@ -16,18 +16,13 @@ Param(
   [string]$UserBackupAccessPath,
 
   [Parameter(Mandatory)]
-  [string]$UserBackupRepositoryUri,
-
-  [Parameter()]
-  [string[]]$BackupDirectories = @('Documents','Pictures','Videos','Music')
+  [string]$UserBackupRepositoryUri
 )
 
 $apache = '%APACHEINSTALL%'
 $install = '%BACKUPINSTALL%'
 $installPath = "$BackupInstallPath\SVNBackup\"
 $baseUri = '%REPOSITORIESURL%'
-$backup = '%USERDIRECTORIES%'
-$directories = $BackupDirectories -join "','"
 $repoPath = if ("$UserBackupRepositoryPath" -Match '^file://')
   { "$UserBackupRepositoryPath" }
   else { "file://localhost/$($UserBackupRepositoryPath -replace '\\','/')" }
@@ -39,7 +34,6 @@ New-Item -ItemType Directory -Path $installPath -Force
 Get-Item -Path "$PSScriptRoot\Add-User.ps1" |
   Get-Content |
   ForEach-Object {$_ -replace $baseUri,$repoPath} |
-  ForEach-Object {$_ -replace $backup,$directories} |
   ForEach-Object {$_ -replace $apache,$ApacheInstall} |
   ForEach-Object {$_ -replace $passFile,$UserBackupPassowrdPath} |
   ForEach-Object {$_ -replace $accessFile,$UserBackupAccessPath} |
@@ -48,7 +42,6 @@ Get-Item -Path "$PSScriptRoot\Add-User.ps1" |
 Get-Item -Path "$PSScriptRoot\Update-UserBackup.ps1" |
   Get-Content |
   ForEach-Object {$_ -replace $baseUri,$UserBackupRepositoryUri} |
-  ForEach-Object {$_ -replace $backup,$directories} |
   Set-Content -Path "$installPath\Update-UserBackup.ps1" -Force
 
 Get-Item -Path "$PSScriptRoot\UserBackup.cmd" |
