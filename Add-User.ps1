@@ -13,6 +13,12 @@ Param(
 )
 
 $baseUri = '%REPOSITORIESURL%'
+$baseRepoName = $baseUri |
+  Select-String '/(?<repo>[\w\d]+)/?$' |
+  Select -ExpandProperty Matches |
+  Select -ExpandProperty Groups |
+  Where Name -EQ repo |
+  Select -ExpandProperty Value
 
 <#
 .NOTES
@@ -31,7 +37,7 @@ ConvertFrom-SecureStringToPlainText -SecureString $Password | .\htpasswd.exe -i 
 Pop-Location
 Add-Content -Path '%ACCESSFILE%' -Value "
 
-[/$UserName]
+[$baseRepoName`:/$UserName]
 $UserName = rw
 "
 
